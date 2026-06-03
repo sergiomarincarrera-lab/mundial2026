@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mundial 2026 · Fase de grupos</title>
+  <style>
+    :root { --bg:#f5f7fb; --card:#ffffff; --ink:#152033; --muted:#637083; --line:#dfe5ee; --head:#102a43; --accent:#0f766e; --soft:#e8f5f3; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family: Arial, Helvetica, sans-serif; background:var(--bg); color:var(--ink); }
+    header { background:linear-gradient(135deg,#0f172a,#164e63); color:white; padding:28px 24px; }
+    header h1 { margin:0 0 8px; font-size:28px; }
+    header p { margin:0; color:#dbeafe; }
+    main { padding:24px; max-width:1400px; margin:auto; }
+    .toolbar { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:18px; align-items:center; }
+    select, button { border:1px solid var(--line); border-radius:10px; background:white; padding:10px 12px; font-size:14px; }
+    button { cursor:pointer; font-weight:700; }
+    .note { color:var(--muted); font-size:13px; margin-bottom:18px; }
+    .grid { display:grid; grid-template-columns: 1.6fr 1fr; gap:20px; align-items:start; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:16px; box-shadow:0 8px 24px rgba(15,23,42,.06); overflow:hidden; margin-bottom:20px; }
+    .card h2 { margin:0; padding:16px 18px; background:#f8fafc; border-bottom:1px solid var(--line); font-size:18px; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { padding:10px 12px; border-bottom:1px solid var(--line); text-align:left; vertical-align:middle; }
+    th { font-size:12px; letter-spacing:.04em; text-transform:uppercase; color:#475569; background:#fbfdff; }
+    td { font-size:14px; }
+    .match-row:hover { background:#f8fafc; }
+    .team { white-space:nowrap; font-weight:600; }
+    .flag { font-size:20px; margin-right:7px; vertical-align:-2px; }
+    .score { width:58px; padding:8px; border:1px solid var(--line); border-radius:8px; text-align:center; font-weight:700; }
+    .venue { color:var(--muted); font-size:12px; }
+    .standings-wrap { display:grid; grid-template-columns:1fr; gap:16px; }
+    .standings th, .standings td { padding:8px 9px; font-size:13px; }
+    .standings td.num, .standings th.num { text-align:right; }
+    .rank { width:28px; font-weight:700; color:var(--accent); }
+    .small { font-size:12px; color:var(--muted); }
+    @media(max-width: 1050px) { .grid { grid-template-columns: 1fr; } }
+    @media(max-width: 760px) { main { padding:14px; } th:nth-child(5), td:nth-child(5) { display:none; } .team { white-space:normal; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Mundial 2026 · Fase de grupos</h1>
+    <p>Calendario de 72 partidos con horario peninsular español, resultados editables y clasificación automática.</p>
+  </header>
+  <main>
+    <div class="toolbar">
+      <label>Grupo: <select id="groupFilter"><option value="all">Todos</option></select></label>
+      <label>Jornada: <select id="roundFilter"><option value="all">Todas</option><option value="1">Jornada 1</option><option value="2">Jornada 2</option><option value="3">Jornada 3</option></select></label>
+      <button id="resetBtn" type="button">Borrar resultados</button>
+    </div>
+    <div class="note">Introduce los goles en los campos de resultado. La clasificación se guarda en este navegador automáticamente.</div>
+    <div class="grid">
+      <section class="card">
+        <h2>Calendario</h2>
+        <div style="overflow:auto">
+          <table id="matchesTable">
+            <thead><tr><th>#</th><th>Jor.</th><th>Grupo</th><th>Fecha / hora</th><th>Partido</th><th>Resultado</th><th>Estadio</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+      <section class="standings-wrap" id="standings"></section>
+    </div>
+  </main>
+<script>
+const matches = [{"num": 1, "jornada": 1, "grupo": "A", "fecha": "11/06/2026", "hora": "21:00", "equipo1": "Mexico", "equipo2": "South Africa", "estadio": "Mexico City Stadium", "ciudad": "Mexico City", "paisSede": "Mexico"}, {"num": 2, "jornada": 1, "grupo": "A", "fecha": "12/06/2026", "hora": "04:00", "equipo1": "South Korea", "equipo2": "Czechia", "estadio": "Guadalajara Stadium", "ciudad": "Zapopan / Guadalajara", "paisSede": "Mexico"}, {"num": 3, "jornada": 1, "grupo": "B", "fecha": "12/06/2026", "hora": "21:00", "equipo1": "Canada", "equipo2": "Bosnia and Herzegovina", "estadio": "Toronto Stadium", "ciudad": "Toronto", "paisSede": "Canada"}, {"num": 4, "jornada": 1, "grupo": "D", "fecha": "13/06/2026", "hora": "03:00", "equipo1": "United States", "equipo2": "Paraguay", "estadio": "Los Angeles Stadium", "ciudad": "Inglewood / Los Angeles", "paisSede": "USA"}, {"num": 5, "jornada": 1, "grupo": "B", "fecha": "13/06/2026", "hora": "21:00", "equipo1": "Qatar", "equipo2": "Switzerland", "estadio": "San Francisco Bay Area Stadium", "ciudad": "Santa Clara / San Francisco Bay Area", "paisSede": "USA"}, {"num": 6, "jornada": 1, "grupo": "C", "fecha": "14/06/2026", "hora": "00:00", "equipo1": "Brazil", "equipo2": "Morocco", "estadio": "New York New Jersey Stadium", "ciudad": "East Rutherford / New York New Jersey", "paisSede": "USA"}, {"num": 7, "jornada": 1, "grupo": "C", "fecha": "14/06/2026", "hora": "03:00", "equipo1": "Haiti", "equipo2": "Scotland", "estadio": "Boston Stadium", "ciudad": "Foxborough / Boston", "paisSede": "USA"}, {"num": 8, "jornada": 1, "grupo": "D", "fecha": "14/06/2026", "hora": "06:00", "equipo1": "Australia", "equipo2": "Türkiye", "estadio": "Vancouver Stadium", "ciudad": "Vancouver", "paisSede": "Canada"}, {"num": 9, "jornada": 1, "grupo": "E", "fecha": "14/06/2026", "hora": "19:00", "equipo1": "Germany", "equipo2": "Curaçao", "estadio": "Houston Stadium", "ciudad": "Houston", "paisSede": "USA"}, {"num": 10, "jornada": 1, "grupo": "F", "fecha": "14/06/2026", "hora": "22:00", "equipo1": "Netherlands", "equipo2": "Japan", "estadio": "Dallas Stadium", "ciudad": "Arlington / Dallas", "paisSede": "USA"}, {"num": 11, "jornada": 1, "grupo": "E", "fecha": "15/06/2026", "hora": "01:00", "equipo1": "Ivory Coast", "equipo2": "Ecuador", "estadio": "Philadelphia Stadium", "ciudad": "Philadelphia", "paisSede": "USA"}, {"num": 12, "jornada": 1, "grupo": "F", "fecha": "15/06/2026", "hora": "04:00", "equipo1": "Sweden", "equipo2": "Tunisia", "estadio": "Monterrey Stadium", "ciudad": "Guadalupe / Monterrey", "paisSede": "Mexico"}, {"num": 13, "jornada": 1, "grupo": "H", "fecha": "15/06/2026", "hora": "19:00", "equipo1": "Spain", "equipo2": "Cape Verde", "estadio": "Atlanta Stadium", "ciudad": "Atlanta", "paisSede": "USA"}, {"num": 14, "jornada": 1, "grupo": "G", "fecha": "16/06/2026", "hora": "00:00", "equipo1": "Belgium", "equipo2": "Egypt", "estadio": "Seattle Stadium", "ciudad": "Seattle", "paisSede": "USA"}, {"num": 15, "jornada": 1, "grupo": "H", "fecha": "16/06/2026", "hora": "00:00", "equipo1": "Saudi Arabia", "equipo2": "Uruguay", "estadio": "Miami Stadium", "ciudad": "Miami Gardens / Miami", "paisSede": "USA"}, {"num": 16, "jornada": 1, "grupo": "G", "fecha": "16/06/2026", "hora": "06:00", "equipo1": "Iran", "equipo2": "New Zealand", "estadio": "Los Angeles Stadium", "ciudad": "Inglewood / Los Angeles", "paisSede": "USA"}, {"num": 17, "jornada": 1, "grupo": "I", "fecha": "16/06/2026", "hora": "21:00", "equipo1": "France", "equipo2": "Senegal", "estadio": "New York New Jersey Stadium", "ciudad": "East Rutherford / New York New Jersey", "paisSede": "USA"}, {"num": 18, "jornada": 1, "grupo": "I", "fecha": "17/06/2026", "hora": "00:00", "equipo1": "Iraq", "equipo2": "Norway", "estadio": "Boston Stadium", "ciudad": "Foxborough / Boston", "paisSede": "USA"}, {"num": 19, "jornada": 1, "grupo": "J", "fecha": "17/06/2026", "hora": "03:00", "equipo1": "Argentina", "equipo2": "Algeria", "estadio": "Kansas City Stadium", "ciudad": "Kansas City", "paisSede": "USA"}, {"num": 20, "jornada": 1, "grupo": "J", "fecha": "17/06/2026", "hora": "06:00", "equipo1": "Austria", "equipo2": "Jordan", "estadio": "San Francisco Bay Area Stadium", "ciudad": "Santa Clara / San Francisco Bay Area", "paisSede": "USA"}, {"num": 21, "jornada": 1, "grupo": "K", "fecha": "17/06/2026", "hora": "19:00", "equipo1": "Portugal", "equipo2": "DR Congo", "estadio": "Houston Stadium", "ciudad": "Houston", "paisSede": "USA"}, {"num": 22, "jornada": 1, "grupo": "L", "fecha": "17/06/2026", "hora": "22:00", "equipo1": "England", "equipo2": "Croatia", "estadio": "Dallas Stadium", "ciudad": "Arlington / Dallas", "paisSede": "USA"}, {"num": 23, "jornada": 1, "grupo": "L", "fecha": "18/06/2026", "hora": "01:00", "equipo1": "Ghana", "equipo2": "Panama", "estadio": "Toronto Stadium", "ciudad": "Toronto", "paisSede": "Canada"}, {"num": 24, "jornada": 1, "grupo": "K", "fecha": "18/06/2026", "hora": "04:00", "equipo1": "Uzbekistan", "equipo2": "Colombia", "estadio": "Mexico City Stadium", "ciudad": "Mexico City", "paisSede": "Mexico"}, {"num": 25, "jornada": 2, "grupo": "A", "fecha": "18/06/2026", "hora": "18:00", "equipo1": "Czechia", "equipo2": "South Africa", "estadio": "Atlanta Stadium", "ciudad": "Atlanta", "paisSede": "USA"}, {"num": 26, "jornada": 2, "grupo": "B", "fecha": "18/06/2026", "hora": "21:00", "equipo1": "Switzerland", "equipo2": "Bosnia and Herzegovina", "estadio": "Los Angeles Stadium", "ciudad": "Inglewood / Los Angeles", "paisSede": "USA"}, {"num": 27, "jornada": 2, "grupo": "B", "fecha": "19/06/2026", "hora": "00:00", "equipo1": "Canada", "equipo2": "Qatar", "estadio": "Vancouver Stadium", "ciudad": "Vancouver", "paisSede": "Canada"}, {"num": 28, "jornada": 2, "grupo": "A", "fecha": "19/06/2026", "hora": "05:00", "equipo1": "Mexico", "equipo2": "South Korea", "estadio": "Guadalajara Stadium", "ciudad": "Zapopan / Guadalajara", "paisSede": "Mexico"}, {"num": 29, "jornada": 2, "grupo": "D", "fecha": "19/06/2026", "hora": "21:00", "equipo1": "United States", "equipo2": "Australia", "estadio": "Seattle Stadium", "ciudad": "Seattle", "paisSede": "USA"}, {"num": 30, "jornada": 2, "grupo": "C", "fecha": "20/06/2026", "hora": "00:00", "equipo1": "Scotland", "equipo2": "Morocco", "estadio": "Boston Stadium", "ciudad": "Foxborough / Boston", "paisSede": "USA"}, {"num": 31, "jornada": 2, "grupo": "C", "fecha": "20/06/2026", "hora": "03:00", "equipo1": "Brazil", "equipo2": "Haiti", "estadio": "Philadelphia Stadium", "ciudad": "Philadelphia", "paisSede": "USA"}, {"num": 32, "jornada": 2, "grupo": "D", "fecha": "20/06/2026", "hora": "06:00", "equipo1": "Türkiye", "equipo2": "Paraguay", "estadio": "San Francisco Bay Area Stadium", "ciudad": "Santa Clara / San Francisco Bay Area", "paisSede": "USA"}, {"num": 33, "jornada": 2, "grupo": "F", "fecha": "20/06/2026", "hora": "19:00", "equipo1": "Netherlands", "equipo2": "Sweden", "estadio": "Houston Stadium", "ciudad": "Houston", "paisSede": "USA"}, {"num": 34, "jornada": 2, "grupo": "E", "fecha": "20/06/2026", "hora": "22:00", "equipo1": "Germany", "equipo2": "Ivory Coast", "estadio": "Toronto Stadium", "ciudad": "Toronto", "paisSede": "Canada"}, {"num": 35, "jornada": 2, "grupo": "E", "fecha": "21/06/2026", "hora": "02:00", "equipo1": "Ecuador", "equipo2": "Curaçao", "estadio": "Kansas City Stadium", "ciudad": "Kansas City", "paisSede": "USA"}, {"num": 36, "jornada": 2, "grupo": "F", "fecha": "21/06/2026", "hora": "06:00", "equipo1": "Tunisia", "equipo2": "Japan", "estadio": "Monterrey Stadium", "ciudad": "Guadalupe / Monterrey", "paisSede": "Mexico"}, {"num": 37, "jornada": 2, "grupo": "H", "fecha": "21/06/2026", "hora": "18:00", "equipo1": "Spain", "equipo2": "Saudi Arabia", "estadio": "Atlanta Stadium", "ciudad": "Atlanta", "paisSede": "USA"}, {"num": 38, "jornada": 2, "grupo": "G", "fecha": "21/06/2026", "hora": "21:00", "equipo1": "Belgium", "equipo2": "Iran", "estadio": "Los Angeles Stadium", "ciudad": "Inglewood / Los Angeles", "paisSede": "USA"}, {"num": 39, "jornada": 2, "grupo": "H", "fecha": "22/06/2026", "hora": "00:00", "equipo1": "Uruguay", "equipo2": "Cape Verde", "estadio": "Miami Stadium", "ciudad": "Miami Gardens / Miami", "paisSede": "USA"}, {"num": 40, "jornada": 2, "grupo": "G", "fecha": "22/06/2026", "hora": "03:00", "equipo1": "New Zealand", "equipo2": "Egypt", "estadio": "Vancouver Stadium", "ciudad": "Vancouver", "paisSede": "Canada"}, {"num": 41, "jornada": 2, "grupo": "J", "fecha": "22/06/2026", "hora": "19:00", "equipo1": "Argentina", "equipo2": "Austria", "estadio": "Dallas Stadium", "ciudad": "Arlington / Dallas", "paisSede": "USA"}, {"num": 42, "jornada": 2, "grupo": "I", "fecha": "22/06/2026", "hora": "23:00", "equipo1": "France", "equipo2": "Iraq", "estadio": "Philadelphia Stadium", "ciudad": "Philadelphia", "paisSede": "USA"}, {"num": 43, "jornada": 2, "grupo": "I", "fecha": "23/06/2026", "hora": "02:00", "equipo1": "Norway", "equipo2": "Senegal", "estadio": "New York New Jersey Stadium", "ciudad": "East Rutherford / New York New Jersey", "paisSede": "USA"}, {"num": 44, "jornada": 2, "grupo": "J", "fecha": "23/06/2026", "hora": "05:00", "equipo1": "Jordan", "equipo2": "Algeria", "estadio": "San Francisco Bay Area Stadium", "ciudad": "Santa Clara / San Francisco Bay Area", "paisSede": "USA"}, {"num": 45, "jornada": 2, "grupo": "K", "fecha": "23/06/2026", "hora": "19:00", "equipo1": "Portugal", "equipo2": "Uzbekistan", "estadio": "Houston Stadium", "ciudad": "Houston", "paisSede": "USA"}, {"num": 46, "jornada": 2, "grupo": "L", "fecha": "23/06/2026", "hora": "22:00", "equipo1": "England", "equipo2": "Ghana", "estadio": "Boston Stadium", "ciudad": "Foxborough / Boston", "paisSede": "USA"}, {"num": 47, "jornada": 2, "grupo": "L", "fecha": "24/06/2026", "hora": "01:00", "equipo1": "Panama", "equipo2": "Croatia", "estadio": "Toronto Stadium", "ciudad": "Toronto", "paisSede": "Canada"}, {"num": 48, "jornada": 2, "grupo": "K", "fecha": "24/06/2026", "hora": "04:00", "equipo1": "Colombia", "equipo2": "DR Congo", "estadio": "Guadalajara Stadium", "ciudad": "Zapopan / Guadalajara", "paisSede": "Mexico"}, {"num": 49, "jornada": 3, "grupo": "B", "fecha": "24/06/2026", "hora": "21:00", "equipo1": "Switzerland", "equipo2": "Canada", "estadio": "Vancouver Stadium", "ciudad": "Vancouver", "paisSede": "Canada"}, {"num": 50, "jornada": 3, "grupo": "B", "fecha": "24/06/2026", "hora": "21:00", "equipo1": "Bosnia and Herzegovina", "equipo2": "Qatar", "estadio": "Seattle Stadium", "ciudad": "Seattle", "paisSede": "USA"}, {"num": 51, "jornada": 3, "grupo": "C", "fecha": "25/06/2026", "hora": "00:00", "equipo1": "Scotland", "equipo2": "Brazil", "estadio": "Miami Stadium", "ciudad": "Miami Gardens / Miami", "paisSede": "USA"}, {"num": 52, "jornada": 3, "grupo": "C", "fecha": "25/06/2026", "hora": "00:00", "equipo1": "Morocco", "equipo2": "Haiti", "estadio": "Atlanta Stadium", "ciudad": "Atlanta", "paisSede": "USA"}, {"num": 53, "jornada": 3, "grupo": "A", "fecha": "25/06/2026", "hora": "03:00", "equipo1": "Czechia", "equipo2": "Mexico", "estadio": "Mexico City Stadium", "ciudad": "Mexico City", "paisSede": "Mexico"}, {"num": 54, "jornada": 3, "grupo": "A", "fecha": "25/06/2026", "hora": "03:00", "equipo1": "South Africa", "equipo2": "South Korea", "estadio": "Monterrey Stadium", "ciudad": "Guadalupe / Monterrey", "paisSede": "Mexico"}, {"num": 55, "jornada": 3, "grupo": "E", "fecha": "25/06/2026", "hora": "22:00", "equipo1": "Ecuador", "equipo2": "Germany", "estadio": "New York New Jersey Stadium", "ciudad": "East Rutherford / New York New Jersey", "paisSede": "USA"}, {"num": 56, "jornada": 3, "grupo": "E", "fecha": "25/06/2026", "hora": "22:00", "equipo1": "Curaçao", "equipo2": "Ivory Coast", "estadio": "Philadelphia Stadium", "ciudad": "Philadelphia", "paisSede": "USA"}, {"num": 57, "jornada": 3, "grupo": "F", "fecha": "26/06/2026", "hora": "01:00", "equipo1": "Japan", "equipo2": "Sweden", "estadio": "Dallas Stadium", "ciudad": "Arlington / Dallas", "paisSede": "USA"}, {"num": 58, "jornada": 3, "grupo": "F", "fecha": "26/06/2026", "hora": "01:00", "equipo1": "Tunisia", "equipo2": "Netherlands", "estadio": "Kansas City Stadium", "ciudad": "Kansas City", "paisSede": "USA"}, {"num": 59, "jornada": 3, "grupo": "D", "fecha": "26/06/2026", "hora": "04:00", "equipo1": "Türkiye", "equipo2": "United States", "estadio": "Los Angeles Stadium", "ciudad": "Inglewood / Los Angeles", "paisSede": "USA"}, {"num": 60, "jornada": 3, "grupo": "D", "fecha": "26/06/2026", "hora": "04:00", "equipo1": "Paraguay", "equipo2": "Australia", "estadio": "San Francisco Bay Area Stadium", "ciudad": "Santa Clara / San Francisco Bay Area", "paisSede": "USA"}, {"num": 61, "jornada": 3, "grupo": "I", "fecha": "26/06/2026", "hora": "21:00", "equipo1": "Norway", "equipo2": "France", "estadio": "Boston Stadium", "ciudad": "Foxborough / Boston", "paisSede": "USA"}, {"num": 62, "jornada": 3, "grupo": "I", "fecha": "26/06/2026", "hora": "21:00", "equipo1": "Senegal", "equipo2": "Iraq", "estadio": "Toronto Stadium", "ciudad": "Toronto", "paisSede": "Canada"}, {"num": 63, "jornada": 3, "grupo": "H", "fecha": "27/06/2026", "hora": "02:00", "equipo1": "Cape Verde", "equipo2": "Saudi Arabia", "estadio": "Houston Stadium", "ciudad": "Houston", "paisSede": "USA"}, {"num": 64, "jornada": 3, "grupo": "H", "fecha": "27/06/2026", "hora": "02:00", "equipo1": "Uruguay", "equipo2": "Spain", "estadio": "Guadalajara Stadium", "ciudad": "Zapopan / Guadalajara", "paisSede": "Mexico"}, {"num": 65, "jornada": 3, "grupo": "G", "fecha": "27/06/2026", "hora": "05:00", "equipo1": "Egypt", "equipo2": "Iran", "estadio": "Seattle Stadium", "ciudad": "Seattle", "paisSede": "USA"}, {"num": 66, "jornada": 3, "grupo": "G", "fecha": "27/06/2026", "hora": "05:00", "equipo1": "New Zealand", "equipo2": "Belgium", "estadio": "Vancouver Stadium", "ciudad": "Vancouver", "paisSede": "Canada"}, {"num": 67, "jornada": 3, "grupo": "L", "fecha": "27/06/2026", "hora": "23:00", "equipo1": "Panama", "equipo2": "England", "estadio": "New York New Jersey Stadium", "ciudad": "East Rutherford / New York New Jersey", "paisSede": "USA"}, {"num": 68, "jornada": 3, "grupo": "L", "fecha": "27/06/2026", "hora": "23:00", "equipo1": "Croatia", "equipo2": "Ghana", "estadio": "Philadelphia Stadium", "ciudad": "Philadelphia", "paisSede": "USA"}, {"num": 69, "jornada": 3, "grupo": "K", "fecha": "28/06/2026", "hora": "01:30", "equipo1": "Colombia", "equipo2": "Portugal", "estadio": "Miami Stadium", "ciudad": "Miami Gardens / Miami", "paisSede": "USA"}, {"num": 70, "jornada": 3, "grupo": "K", "fecha": "28/06/2026", "hora": "01:30", "equipo1": "DR Congo", "equipo2": "Uzbekistan", "estadio": "Atlanta Stadium", "ciudad": "Atlanta", "paisSede": "USA"}, {"num": 71, "jornada": 3, "grupo": "J", "fecha": "28/06/2026", "hora": "04:00", "equipo1": "Algeria", "equipo2": "Austria", "estadio": "Kansas City Stadium", "ciudad": "Kansas City", "paisSede": "USA"}, {"num": 72, "jornada": 3, "grupo": "J", "fecha": "28/06/2026", "hora": "04:00", "equipo1": "Jordan", "equipo2": "Argentina", "estadio": "Dallas Stadium", "ciudad": "Arlington / Dallas", "paisSede": "USA"}];
+const flags = {"Mexico": "🇲🇽", "South Africa": "🇿🇦", "South Korea": "🇰🇷", "Czechia": "🇨🇿", "Canada": "🇨🇦", "Bosnia and Herzegovina": "🇧🇦", "Qatar": "🇶🇦", "Switzerland": "🇨🇭", "United States": "🇺🇸", "Paraguay": "🇵🇾", "Australia": "🇦🇺", "Türkiye": "🇹🇷", "Brazil": "🇧🇷", "Morocco": "🇲🇦", "Haiti": "🇭🇹", "Scotland": "🏴", "Ivory Coast": "🇨🇮", "Ecuador": "🇪🇨", "Germany": "🇩🇪", "Curaçao": "🇨🇼", "Sweden": "🇸🇪", "Tunisia": "🇹🇳", "Netherlands": "🇳🇱", "Japan": "🇯🇵", "Saudi Arabia": "🇸🇦", "Uruguay": "🇺🇾", "Spain": "🇪🇸", "Cape Verde": "🇨🇻", "Iran": "🇮🇷", "New Zealand": "🇳🇿", "Belgium": "🇧🇪", "Egypt": "🇪🇬", "France": "🇫🇷", "Senegal": "🇸🇳", "Iraq": "🇮🇶", "Norway": "🇳🇴", "Argentina": "🇦🇷", "Algeria": "🇩🇿", "Austria": "🇦🇹", "Jordan": "🇯🇴", "Portugal": "🇵🇹", "DR Congo": "🇨🇩", "England": "🏴", "Croatia": "🇭🇷", "Uzbekistan": "🇺🇿", "Colombia": "🇨🇴", "Ghana": "🇬🇭", "Panama": "🇵🇦"};
+const names = {"Mexico": "México", "South Africa": "Sudáfrica", "South Korea": "Corea del Sur", "Czechia": "Chequia", "Canada": "Canadá", "Bosnia and Herzegovina": "Bosnia y Herzegovina", "Qatar": "Catar", "Switzerland": "Suiza", "United States": "Estados Unidos", "Paraguay": "Paraguay", "Australia": "Australia", "Türkiye": "Turquía", "Brazil": "Brasil", "Morocco": "Marruecos", "Haiti": "Haití", "Scotland": "Escocia", "Ivory Coast": "Costa de Marfil", "Ecuador": "Ecuador", "Germany": "Alemania", "Curaçao": "Curazao", "Sweden": "Suecia", "Tunisia": "Túnez", "Netherlands": "Países Bajos", "Japan": "Japón", "Saudi Arabia": "Arabia Saudí", "Uruguay": "Uruguay", "Spain": "España", "Cape Verde": "Cabo Verde", "Iran": "Irán", "New Zealand": "Nueva Zelanda", "Belgium": "Bélgica", "Egypt": "Egipto", "France": "Francia", "Senegal": "Senegal", "Iraq": "Irak", "Norway": "Noruega", "Argentina": "Argentina", "Algeria": "Argelia", "Austria": "Austria", "Jordan": "Jordania", "Portugal": "Portugal", "DR Congo": "RD Congo", "England": "Inglaterra", "Croatia": "Croacia", "Uzbekistan": "Uzbekistán", "Colombia": "Colombia", "Ghana": "Ghana", "Panama": "Panamá"};
+const groups = [...new Set(matches.map(m => m.grupo))].sort();
+const storageKey = 'wc2026_group_results_v1';
+let results = JSON.parse(localStorage.getItem(storageKey) || '{}');
+
+function teamLabel(t) { return `<span class="flag">${flags[t] || '🏳️'}</span><span>${names[t] || t}</span>`; }
+function save() { localStorage.setItem(storageKey, JSON.stringify(results)); }
+function getScore(num) { return results[num] || {home:'', away:''}; }
+
+function populateFilters() {
+  const gf = document.getElementById('groupFilter');
+  groups.forEach(g => { const o=document.createElement('option'); o.value=g; o.textContent='Grupo '+g; gf.appendChild(o); });
+}
+
+function renderMatches() {
+  const gf = document.getElementById('groupFilter').value;
+  const rf = document.getElementById('roundFilter').value;
+  const tbody = document.querySelector('#matchesTable tbody');
+  tbody.innerHTML = '';
+  matches.filter(m => (gf==='all'||m.grupo===gf) && (rf==='all'||String(m.jornada)===rf)).forEach(m => {
+    const s = getScore(m.num);
+    const tr = document.createElement('tr'); tr.className='match-row';
+    tr.innerHTML = `<td>${m.num}</td><td>${m.jornada}</td><td><strong>${m.grupo}</strong></td><td><strong>${m.fecha}</strong><br><span class="small">${m.hora} España</span></td><td><div class="team">${teamLabel(m.equipo1)}</div><div class="team">${teamLabel(m.equipo2)}</div></td><td><input class="score" type="number" min="0" inputmode="numeric" data-num="${m.num}" data-side="home" value="${s.home}"> - <input class="score" type="number" min="0" inputmode="numeric" data-num="${m.num}" data-side="away" value="${s.away}"></td><td><strong>${m.estadio}</strong><br><span class="venue">${m.ciudad}, ${m.paisSede}</span></td>`;
+    tbody.appendChild(tr);
+  });
+  document.querySelectorAll('.score').forEach(inp => inp.addEventListener('input', e => {
+    const num = e.target.dataset.num, side=e.target.dataset.side;
+    results[num] = results[num] || {home:'', away:''};
+    results[num][side] = e.target.value;
+    if(results[num].home==='' && results[num].away==='') delete results[num];
+    save(); renderStandings();
+  }));
+}
+
+function initTeam(group, team) { return {group, team, P:0, W:0, D:0, L:0, GF:0, GA:0, GD:0, Pts:0}; }
+function computeStandings() {
+  const table = {};
+  groups.forEach(g => table[g] = {});
+  matches.forEach(m => {
+    table[m.grupo][m.equipo1] = table[m.grupo][m.equipo1] || initTeam(m.grupo, m.equipo1);
+    table[m.grupo][m.equipo2] = table[m.grupo][m.equipo2] || initTeam(m.grupo, m.equipo2);
+    const s = getScore(m.num);
+    if(s.home !== '' && s.away !== '' && !isNaN(Number(s.home)) && !isNaN(Number(s.away))) {
+      const a = table[m.grupo][m.equipo1], b = table[m.grupo][m.equipo2];
+      const hg = Number(s.home), ag = Number(s.away);
+      a.P++; b.P++; a.GF+=hg; a.GA+=ag; b.GF+=ag; b.GA+=hg;
+      if(hg>ag) { a.W++; b.L++; a.Pts+=3; } else if(hg<ag) { b.W++; a.L++; b.Pts+=3; } else { a.D++; b.D++; a.Pts++; b.Pts++; }
+      a.GD=a.GF-a.GA; b.GD=b.GF-b.GA;
+    }
+  });
+  return table;
+}
+function renderStandings() {
+  const data = computeStandings();
+  const container = document.getElementById('standings'); container.innerHTML='';
+  groups.forEach(g => {
+    const teams = Object.values(data[g]).sort((a,b) => b.Pts-a.Pts || b.GD-a.GD || b.GF-a.GF || (names[a.team]||a.team).localeCompare(names[b.team]||b.team));
+    const card = document.createElement('section'); card.className='card';
+    card.innerHTML = `<h2>Clasificación · Grupo ${g}</h2><div style="overflow:auto"><table class="standings"><thead><tr><th></th><th>Equipo</th><th class="num">PJ</th><th class="num">G</th><th class="num">E</th><th class="num">P</th><th class="num">GF</th><th class="num">GC</th><th class="num">DG</th><th class="num">Pts</th></tr></thead><tbody>${teams.map((t,i)=>`<tr><td class="rank">${i+1}</td><td class="team">${teamLabel(t.team)}</td><td class="num">${t.P}</td><td class="num">${t.W}</td><td class="num">${t.D}</td><td class="num">${t.L}</td><td class="num">${t.GF}</td><td class="num">${t.GA}</td><td class="num">${t.GD}</td><td class="num"><strong>${t.Pts}</strong></td></tr>`).join('')}</tbody></table></div>`;
+    container.appendChild(card);
+  });
+}
+
+document.getElementById('groupFilter').addEventListener('change', renderMatches);
+document.getElementById('roundFilter').addEventListener('change', renderMatches);
+document.getElementById('resetBtn').addEventListener('click', () => { if(confirm('¿Borrar todos los resultados introducidos?')) { results={}; save(); renderMatches(); renderStandings(); } });
+populateFilters(); renderMatches(); renderStandings();
+</script>
+</body>
+</html>
